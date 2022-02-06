@@ -24,6 +24,10 @@ func (v Value) Contains(v2 Value) bool {
 	return intersection.Cmp(bigZero) == 1
 }
 
+func (v Value) Clear() {
+	v.i.Set(bigZero)
+}
+
 func (v Value) IsEmpty() bool {
 	return v.i.Cmp(bigZero) == 0
 }
