@@ -96,6 +96,7 @@ func valueFromName(name string, allowWrites bool) (value Value, found bool) {
 		}
 
 		value = valueCurrent.Clone()
+		found = true
 
 		valueCurrent.i.Add(valueCurrent.i, bigOne)
 
@@ -103,8 +104,6 @@ func valueFromName(name string, allowWrites bool) (value Value, found bool) {
 	}
 
 	value.i.Exp(bigTwo, value.i, nil)
-
-	found = true
 
 	return
 }
