@@ -93,19 +93,16 @@ func valueFromName(name string, allowWrites bool) (value Value, found bool) {
 			return
 		}
 
-		clonedValueCurrent := valueCurrent.Clone()
+		value = valueCurrent.Clone()
 
 		valueCurrent.i.Add(valueCurrent.i, bigOne)
 
-		valuesByName[name] = clonedValueCurrent
-
-		value = clonedValueCurrent
+		valuesByName[name] = value
 	}
 
-	shiftedValue := Value{i: new(big.Int)}
-	shiftedValue.i.Exp(bigTwo, value.i, nil)
+	value.i.Exp(bigTwo, value.i, nil)
 
-	value, found = shiftedValue, true
+	found = true
 
 	return
 }
