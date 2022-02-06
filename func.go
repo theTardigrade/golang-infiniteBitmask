@@ -88,7 +88,9 @@ func valueFromName(name string, allowWrites bool) (value Value, found bool) {
 	}
 
 	value, found = valuesByName[name]
-	if !found {
+	if found {
+		value = value.Clone()
+	} else {
 		if !allowWrites {
 			return
 		}
