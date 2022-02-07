@@ -4,9 +4,10 @@ import "math/big"
 
 type Value struct {
 	i *big.Int
+	g *Generator
 }
 
-func newValue(n int64) (v Value) {
+func newValue(n int64, g *Generator) (v Value) {
 	v.i = big.NewInt(n)
 
 	return
@@ -14,6 +15,10 @@ func newValue(n int64) (v Value) {
 
 func (v Value) Combine(vs ...Value) {
 	for _, v2 := range vs {
+		if v2.g != v.g {
+			panic(ErrValuesMismatched)
+		}
+
 		v.i.Or(v.i, v2.i)
 	}
 }
@@ -22,6 +27,10 @@ func (v Value) Uncombine(vs ...Value) {
 	mask := new(big.Int)
 
 	for _, v2 := range vs {
+		if v2.g != v.g {
+			panic(ErrValuesMismatched)
+		}
+
 		mask.Not(v2.i)
 
 		v.i.And(v.i, mask)
@@ -33,6 +42,10 @@ func (v Value) Contains(vs ...Value) bool {
 	intersection.Set(v.i)
 
 	for _, v2 := range vs {
+		if v2.g != v.g {
+			panic(ErrValuesMismatched)
+		}
+
 		intersection.And(intersection, v2.i)
 	}
 

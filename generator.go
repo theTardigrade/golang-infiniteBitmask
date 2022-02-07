@@ -17,9 +17,16 @@ const (
 
 func NewGenerator() (g *Generator) {
 	g = &Generator{
-		valueCurrent: newValue(generatorValueInitial),
 		valuesByName: make(map[string]Value),
 	}
+
+	g.valueCurrent = g.newValue(generatorValueInitial)
+
+	return
+}
+
+func (g *Generator) newValue(n int64) (v Value) {
+	v = newValue(n, g)
 
 	return
 }
@@ -115,7 +122,7 @@ func (g *Generator) valueFromNameReadWrite(name string) (value Value) {
 		value = value.Clone()
 	} else {
 		if g.valueCurrent.i == nil {
-			g.valueCurrent = newValue(generatorValueInitial)
+			g.valueCurrent = g.newValue(generatorValueInitial)
 		}
 
 		value = g.valueCurrent.Clone()
