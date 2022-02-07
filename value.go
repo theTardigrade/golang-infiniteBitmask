@@ -6,15 +6,20 @@ type Value struct {
 	i *big.Int
 }
 
-func (v Value) Combine(v2 Value) {
-	v.i.Or(v.i, v2.i)
+func (v Value) Combine(vs ...Value) {
+	for _, v2 := range vs {
+		v.i.Or(v.i, v2.i)
+	}
 }
 
-func (v Value) Uncombine(v2 Value) {
+func (v Value) Uncombine(vs ...Value) {
 	mask := new(big.Int)
-	mask.Not(v2.i)
 
-	v.i.And(v.i, mask)
+	for _, v2 := range vs {
+		mask.Not(v2.i)
+
+		v.i.And(v.i, mask)
+	}
 }
 
 func (v Value) Contains(v2 Value) bool {
