@@ -94,8 +94,6 @@ func (g *Generator) valueFromNameReadOnly(name string) (value Value, found bool)
 	value, found = g.valuesByName[name]
 	if found {
 		value = value.Clone()
-	} else {
-		return
 	}
 
 	return
