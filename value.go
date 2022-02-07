@@ -65,6 +65,7 @@ func (v Value) Clone() (v2 Value) {
 	i2.Set(v.i)
 
 	v2.i = i2
+	v2.g = v.g
 
 	return
 }
