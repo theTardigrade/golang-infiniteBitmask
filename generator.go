@@ -11,7 +11,7 @@ type Generator struct {
 }
 
 const (
-	generatorValueInitial = 1
+	generatorValueNumberInitial = 1
 )
 
 func NewGenerator() (g *Generator) {
@@ -19,13 +19,13 @@ func NewGenerator() (g *Generator) {
 		valuesByName: make(map[string]*Value),
 	}
 
-	g.valueCurrent = g.newValue(generatorValueInitial)
+	g.valueCurrent = g.newValue(generatorValueNumberInitial)
 
 	return
 }
 
-func (g *Generator) newValue(n int64) (v *Value) {
-	v = newValue(n, g)
+func (g *Generator) newValue(number int64) (v *Value) {
+	v = newValue(number, g)
 
 	return
 }
@@ -115,7 +115,7 @@ func (g *Generator) valueFromNameReadWrite(name string) (value *Value) {
 		value = value.Clone()
 	} else {
 		if g.valueCurrent == nil || g.valueCurrent.number == nil {
-			g.valueCurrent = g.newValue(generatorValueInitial)
+			g.valueCurrent = g.newValue(generatorValueNumberInitial)
 		}
 
 		value = g.valueCurrent.Clone()

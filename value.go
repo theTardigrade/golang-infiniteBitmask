@@ -11,10 +11,10 @@ type Value struct {
 	mutex     sync.RWMutex
 }
 
-func newValue(n int64, g *Generator) (v *Value) {
+func newValue(number int64, generator *Generator) (v *Value) {
 	v = &Value{
-		number:    big.NewInt(n),
-		generator: g,
+		number:    big.NewInt(number),
+		generator: generator,
 	}
 
 	return
