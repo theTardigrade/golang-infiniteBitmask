@@ -12,7 +12,7 @@ func (v Value) Combine(v2 Value) {
 
 func (v Value) Uncombine(v2 Value) {
 	mask := new(big.Int)
-	mask = v2.i.Not(v2.i)
+	mask.Not(v2.i)
 
 	v.i.And(v.i, mask)
 }
