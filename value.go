@@ -1,76 +1,131 @@
 package infiniteBitmask
 
-import "math/big"
+import (
+	"math/big"
+	"sync"
+)
 
 type Value struct {
-	i *big.Int
-	g *Generator
+	number    *big.Int
+	generator *Generator
+	mutex     sync.RWMutex
 }
 
-func newValue(n int64, g *Generator) (v Value) {
-	v.i = big.NewInt(n)
-	v.g = g
+func newValue(n int64, g *Generator) (v *Value) {
+	v = &Value{
+		number:    big.NewInt(n),
+		generator: g,
+	}
 
 	return
 }
 
-func (v Value) Combine(vs ...Value) {
-	for _, v2 := range vs {
-		if v2.g != v.g {
-			panic(ErrValuesMismatched)
-		}
-
-		v.i.Or(v.i, v2.i)
-	}
-}
-
-func (v Value) Uncombine(vs ...Value) {
-	mask := new(big.Int)
-
-	for _, v2 := range vs {
-		if v2.g != v.g {
-			panic(ErrValuesMismatched)
-		}
-
-		mask.Not(v2.i)
-
-		v.i.And(v.i, mask)
-	}
-}
-
-func (v Value) Contains(vs ...Value) bool {
-	intersection := new(big.Int)
-	intersection.Set(v.i)
-
-	for _, v2 := range vs {
-		if v2.g != v.g {
-			panic(ErrValuesMismatched)
-		}
-
-		intersection.And(intersection, v2.i)
+func (v *Value) read(handler func(*Value)) {
+	if v == nil {
+		return
 	}
 
-	return intersection.Cmp(bigZero) == 1
+	defer v.mutex.RUnlock()
+	v.mutex.RLock()
+
+	handler(v)
 }
 
-func (v Value) Clear() {
-	v.i.Set(bigZero)
+func (v *Value) write(handler func(*Value)) {
+	if v == nil {
+		return
+	}
+
+	defer v.mutex.Unlock()
+	v.mutex.Lock()
+
+	handler(v)
 }
 
-func (v Value) IsEmpty() bool {
-	return v.i.Cmp(bigZero) == 0
+func (v *Value) Combine(vs ...*Value) {
+	v.write(func(v *Value) {
+		for _, v2 := range vs {
+			v2.read(func(v2 *Value) {
+				if v2.generator != v.generator {
+					panic(ErrValuesMismatched)
+				}
+
+				v.number.Or(v.number, v2.number)
+			})
+		}
+	})
 }
 
-func (v Value) Clone() (v2 Value) {
-	i2 := new(big.Int)
-	i2.Set(v.i)
+func (v *Value) Uncombine(vs ...*Value) {
+	v.write(func(v *Value) {
+		for _, v2 := range vs {
+			v2.read(func(v2 *Value) {
+				if v2.generator != v.generator {
+					panic(ErrValuesMismatched)
+				}
 
-	v2.i = i2
-	v2.g = v.g
+				mask := new(big.Int)
+				mask.Not(v2.number)
+
+				v.number.And(v.number, mask)
+			})
+		}
+	})
+}
+
+func (v *Value) Contains(vs ...*Value) (result bool) {
+	v.write(func(v *Value) {
+		intersection := new(big.Int)
+		intersection.Set(v.number)
+
+		for _, v2 := range vs {
+			v2.read(func(v2 *Value) {
+				if v2.generator != v.generator {
+					panic(ErrValuesMismatched)
+				}
+
+				intersection.And(intersection, v2.number)
+			})
+		}
+
+		result = intersection.Cmp(bigZero) == 1
+	})
 
 	return
 }
 
-func (v Value) BigInt() *big.Int {
-	return v.i
+func (v *Value) Clear() {
+	v.write(func(v *Value) {
+		v.number.Set(bigZero)
+	})
+}
+
+func (v *Value) IsNotEmpty() (result bool) {
+	v.read(func(v *Value) {
+		result = v.number.Cmp(bigZero) != 0
+	})
+
+	return
+}
+
+func (v *Value) Clone() (v2 *Value) {
+	v.read(func(v *Value) {
+		n2 := new(big.Int)
+		n2.Set(v.number)
+
+		v2 = &Value{
+			number:    n2,
+			generator: v.generator,
+		}
+	})
+
+	return
+}
+
+func (v *Value) Number() (number *big.Int) {
+	v.read(func(v *Value) {
+		number = v.number
+	})
+
+	return
 }
