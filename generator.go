@@ -71,7 +71,7 @@ func (g *Generator) ValueFromName(name string) (value Value) {
 	return
 }
 
-func (g *Generator) ValueFromNames(names []string) (value Value) {
+func (g *Generator) ValueFromNames(names ...string) (value Value) {
 	nameValues := make([]Value, len(names))
 
 	for i, n := range names {
