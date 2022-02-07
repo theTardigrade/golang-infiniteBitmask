@@ -100,7 +100,7 @@ func valueFromName(name string, allowWrites bool) (value Value, found bool) {
 
 		valueCurrent.i.Add(valueCurrent.i, bigOne)
 
-		valuesByName[name] = value
+		valuesByName[name] = value.Clone()
 	}
 
 	value.i.Exp(bigTwo, value.i, nil)
