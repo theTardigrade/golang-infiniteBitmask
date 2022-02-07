@@ -108,6 +108,12 @@ func (v *Value) IsNotEmpty() (result bool) {
 	return
 }
 
+func (v *Value) IsEmpty() (result bool) {
+	result = !v.IsNotEmpty()
+
+	return
+}
+
 func (v *Value) Clone() (v2 *Value) {
 	v.read(func(v *Value) {
 		n2 := new(big.Int)
