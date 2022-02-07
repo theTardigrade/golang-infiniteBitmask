@@ -24,9 +24,10 @@ func (v Value) Uncombine(vs ...Value) {
 
 func (v Value) Contains(vs ...Value) bool {
 	intersection := new(big.Int)
+	intersection.Set(v.i)
 
 	for _, v2 := range vs {
-		intersection.And(v.i, v2.i)
+		intersection.And(intersection, v2.i)
 	}
 
 	return intersection.Cmp(bigZero) == 1
