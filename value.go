@@ -136,3 +136,11 @@ func (v *Value) Number() (number *big.Int) {
 
 	return
 }
+
+func (v *Value) Generator() (generator *Generator) {
+	v.read(func() {
+		generator = v.generator
+	})
+
+	return
+}
