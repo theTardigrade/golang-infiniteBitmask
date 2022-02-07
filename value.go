@@ -6,6 +6,12 @@ type Value struct {
 	i *big.Int
 }
 
+func newValue(n int64) (v Value) {
+	v.i = big.NewInt(n)
+
+	return
+}
+
 func (v Value) Combine(vs ...Value) {
 	for _, v2 := range vs {
 		v.i.Or(v.i, v2.i)

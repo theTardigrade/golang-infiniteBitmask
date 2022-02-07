@@ -15,9 +15,9 @@ const (
 	generatorValueInitial = 1
 )
 
-func New() (g *Generator) {
+func NewGenerator() (g *Generator) {
 	g = &Generator{
-		valueCurrent: Value{i: big.NewInt(generatorValueInitial)},
+		valueCurrent: newValue(generatorValueInitial),
 		valuesByName: make(map[string]Value),
 	}
 
@@ -115,7 +115,7 @@ func (g *Generator) valueFromNameReadWrite(name string) (value Value) {
 		value = value.Clone()
 	} else {
 		if g.valueCurrent.i == nil {
-			g.valueCurrent.i = big.NewInt(generatorValueInitial)
+			g.valueCurrent = newValue(generatorValueInitial)
 		}
 
 		value = g.valueCurrent.Clone()
