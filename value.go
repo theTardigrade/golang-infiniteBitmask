@@ -9,6 +9,7 @@ type Value struct {
 
 func newValue(n int64, g *Generator) (v Value) {
 	v.i = big.NewInt(n)
+	v.g = g
 
 	return
 }
