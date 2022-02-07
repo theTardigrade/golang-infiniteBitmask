@@ -1,7 +1,6 @@
 package infiniteBitmask
 
 import (
-	"math/big"
 	"sync"
 )
 
@@ -79,13 +78,11 @@ func (g *Generator) ValueFromNames(names []string) (value Value) {
 		nameValues[i] = g.ValueFromName(n)
 	}
 
-	i := new(big.Int)
+	value = g.newValue(0)
 
 	for _, v := range nameValues {
-		i.Or(i, v.i)
+		value.i.Or(value.i, v.i)
 	}
-
-	value.i = i
 
 	return
 }
