@@ -5,8 +5,8 @@ import (
 )
 
 type Generator struct {
-	valueCurrent Value
-	valuesByName map[string]Value
+	valueCurrent *Value
+	valuesByName map[string]*Value
 	mutex        sync.RWMutex
 }
 
@@ -16,7 +16,7 @@ const (
 
 func NewGenerator() (g *Generator) {
 	g = &Generator{
-		valuesByName: make(map[string]Value),
+		valuesByName: make(map[string]*Value),
 	}
 
 	g.valueCurrent = g.newValue(generatorValueInitial)
@@ -24,7 +24,7 @@ func NewGenerator() (g *Generator) {
 	return
 }
 
-func (g *Generator) newValue(n int64) (v Value) {
+func (g *Generator) newValue(n int64) (v *Value) {
 	v = newValue(n, g)
 
 	return
@@ -45,11 +45,11 @@ func (g *Generator) Names() (names []string) {
 	return
 }
 
-func (g *Generator) Values() (values []Value) {
+func (g *Generator) Values() (values []*Value) {
 	defer g.mutex.RUnlock()
 	g.mutex.RLock()
 
-	values = make([]Value, len(g.valuesByName))
+	values = make([]*Value, len(g.valuesByName))
 
 	var i int
 	for _, v := range g.valuesByName {
@@ -60,7 +60,7 @@ func (g *Generator) Values() (values []Value) {
 	return
 }
 
-func (g *Generator) ValueFromName(name string) (value Value) {
+func (g *Generator) ValueFromName(name string) (value *Value) {
 	value, found := g.valueFromNameReadOnly(name)
 	if found {
 		return
@@ -71,19 +71,19 @@ func (g *Generator) ValueFromName(name string) (value Value) {
 	return
 }
 
-func (g *Generator) ValueFromNames(names ...string) (value Value) {
+func (g *Generator) ValueFromNames(names ...string) (value *Value) {
 	value = g.newValue(0)
 
 	for _, n := range names {
 		v := g.ValueFromName(n)
 
-		value.i.Or(value.i, v.i)
+		value.number.Or(value.number, v.number)
 	}
 
 	return
 }
 
-func (g *Generator) valueFromNameReadOnly(name string) (value Value, found bool) {
+func (g *Generator) valueFromNameReadOnly(name string) (value *Value, found bool) {
 	defer g.mutex.RUnlock()
 	g.mutex.RLock()
 
@@ -99,7 +99,7 @@ func (g *Generator) valueFromNameReadOnly(name string) (value Value, found bool)
 	return
 }
 
-func (g *Generator) valueFromNameReadWrite(name string) (value Value) {
+func (g *Generator) valueFromNameReadWrite(name string) (value *Value) {
 	defer g.mutex.Unlock()
 	g.mutex.Lock()
 
@@ -108,19 +108,19 @@ func (g *Generator) valueFromNameReadWrite(name string) (value Value) {
 	if g.valuesByName != nil {
 		value, found = g.valuesByName[name]
 	} else {
-		g.valuesByName = make(map[string]Value)
+		g.valuesByName = make(map[string]*Value)
 	}
 
 	if found {
 		value = value.Clone()
 	} else {
-		if g.valueCurrent.i == nil {
+		if g.valueCurrent == nil || g.valueCurrent.number == nil {
 			g.valueCurrent = g.newValue(generatorValueInitial)
 		}
 
 		value = g.valueCurrent.Clone()
 
-		g.valueCurrent.i.Lsh(g.valueCurrent.i, 1)
+		g.valueCurrent.number.Lsh(g.valueCurrent.number, 1)
 
 		g.valuesByName[name] = value.Clone()
 	}
