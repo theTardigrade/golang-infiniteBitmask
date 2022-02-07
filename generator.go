@@ -17,10 +17,9 @@ const (
 
 func New() (g *Generator) {
 	g = &Generator{
+		valueCurrent: Value{i: big.NewInt(generatorValueInitial)},
 		valuesByName: make(map[string]Value),
 	}
-
-	g.valueCurrent.i = big.NewInt(generatorValueInitial)
 
 	return
 }
