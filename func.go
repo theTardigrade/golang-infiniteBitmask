@@ -33,13 +33,8 @@ func Values() (values []Value) {
 	values = make([]Value, len(valuesByName))
 
 	var i int
-	var found bool
-	for n := range valuesByName {
-		values[i], found = valueFromName(n, false)
-		if !found {
-			panic(ErrValueNotFound)
-		}
-
+	for _, v := range valuesByName {
+		values[i] = v
 		i++
 	}
 
@@ -47,15 +42,12 @@ func Values() (values []Value) {
 }
 
 func ValueFromName(name string) (value Value) {
-	value, found := valueFromName(name, false)
+	value, found := valueFromNameReadOnly(name)
 	if found {
 		return
 	}
 
-	value, found = valueFromName(name, true)
-	if !found {
-		panic(ErrValueNotFound)
-	}
+	value = valueFromNameReadWrite(name)
 
 	return
 }
@@ -78,32 +70,37 @@ func ValueFromNames(names []string) (value Value) {
 	return
 }
 
-func valueFromName(name string, allowWrites bool) (value Value, found bool) {
-	if allowWrites {
-		defer mutex.Unlock()
-		mutex.Lock()
-	} else {
-		defer mutex.RUnlock()
-		mutex.RLock()
-	}
+func valueFromNameReadOnly(name string) (value Value, found bool) {
+	defer mutex.RUnlock()
+	mutex.RLock()
 
 	value, found = valuesByName[name]
 	if found {
 		value = value.Clone()
 	} else {
-		if !allowWrites {
-			return
-		}
+		return
+	}
 
+	return
+}
+
+func valueFromNameReadWrite(name string) (value Value) {
+	defer mutex.Unlock()
+	mutex.Lock()
+
+	var found bool
+
+	value, found = valuesByName[name]
+	if found {
+		value = value.Clone()
+	} else {
 		value = valueCurrent.Clone()
 		found = true
 
-		valueCurrent.i.Add(valueCurrent.i, bigOne)
+		valueCurrent.i.Lsh(valueCurrent.i, 1)
 
 		valuesByName[name] = value.Clone()
 	}
-
-	value.i.Exp(bigTwo, value.i, nil)
 
 	return
 }
