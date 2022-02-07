@@ -42,13 +42,18 @@ func (v *Value) write(handler func(*Value)) {
 	handler(v)
 }
 
+// read or write method should be called on both values first
+func (v *Value) checkGeneratorMatch(v2 *Value) {
+	if v.generator != v2.generator {
+		panic(ErrValuesMismatched)
+	}
+}
+
 func (v *Value) Combine(vs ...*Value) {
 	v.write(func(v *Value) {
 		for _, v2 := range vs {
 			v2.read(func(v2 *Value) {
-				if v2.generator != v.generator {
-					panic(ErrValuesMismatched)
-				}
+				v.checkGeneratorMatch(v2)
 
 				v.number.Or(v.number, v2.number)
 			})
@@ -60,9 +65,7 @@ func (v *Value) Uncombine(vs ...*Value) {
 	v.write(func(v *Value) {
 		for _, v2 := range vs {
 			v2.read(func(v2 *Value) {
-				if v2.generator != v.generator {
-					panic(ErrValuesMismatched)
-				}
+				v.checkGeneratorMatch(v2)
 
 				mask := new(big.Int)
 				mask.Not(v2.number)
@@ -80,9 +83,7 @@ func (v *Value) Contains(vs ...*Value) (result bool) {
 
 		for _, v2 := range vs {
 			v2.read(func(v2 *Value) {
-				if v2.generator != v.generator {
-					panic(ErrValuesMismatched)
-				}
+				v.checkGeneratorMatch(v2)
 
 				intersection.And(intersection, v2.number)
 			})
