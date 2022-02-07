@@ -72,15 +72,11 @@ func (g *Generator) ValueFromName(name string) (value Value) {
 }
 
 func (g *Generator) ValueFromNames(names ...string) (value Value) {
-	nameValues := make([]Value, len(names))
-
-	for i, n := range names {
-		nameValues[i] = g.ValueFromName(n)
-	}
-
 	value = g.newValue(0)
 
-	for _, v := range nameValues {
+	for _, n := range names {
+		v := g.ValueFromName(n)
+
 		value.i.Or(value.i, v.i)
 	}
 
