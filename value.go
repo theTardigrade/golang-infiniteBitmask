@@ -20,7 +20,7 @@ func newValue(number int64, generator *Generator) (v *Value) {
 	return
 }
 
-func (v *Value) read(handler func(*Value)) {
+func (v *Value) read(handler func()) {
 	if v == nil {
 		return
 	}
@@ -28,10 +28,10 @@ func (v *Value) read(handler func(*Value)) {
 	defer v.mutex.RUnlock()
 	v.mutex.RLock()
 
-	handler(v)
+	handler()
 }
 
-func (v *Value) write(handler func(*Value)) {
+func (v *Value) write(handler func()) {
 	if v == nil {
 		return
 	}
@@ -39,7 +39,7 @@ func (v *Value) write(handler func(*Value)) {
 	defer v.mutex.Unlock()
 	v.mutex.Lock()
 
-	handler(v)
+	handler()
 }
 
 // read or write method should be called on both values first
@@ -50,9 +50,9 @@ func (v *Value) checkGeneratorMatch(v2 *Value) {
 }
 
 func (v *Value) Combine(vs ...*Value) {
-	v.write(func(v *Value) {
+	v.write(func() {
 		for _, v2 := range vs {
-			v2.read(func(v2 *Value) {
+			v2.read(func() {
 				v.checkGeneratorMatch(v2)
 
 				v.number.Or(v.number, v2.number)
@@ -62,9 +62,9 @@ func (v *Value) Combine(vs ...*Value) {
 }
 
 func (v *Value) Uncombine(vs ...*Value) {
-	v.write(func(v *Value) {
+	v.write(func() {
 		for _, v2 := range vs {
-			v2.read(func(v2 *Value) {
+			v2.read(func() {
 				v.checkGeneratorMatch(v2)
 
 				mask := new(big.Int)
@@ -77,12 +77,12 @@ func (v *Value) Uncombine(vs ...*Value) {
 }
 
 func (v *Value) Contains(vs ...*Value) (result bool) {
-	v.read(func(v *Value) {
+	v.read(func() {
 		intersection := new(big.Int)
 		intersection.Set(v.number)
 
 		for _, v2 := range vs {
-			v2.read(func(v2 *Value) {
+			v2.read(func() {
 				v.checkGeneratorMatch(v2)
 
 				intersection.And(intersection, v2.number)
@@ -96,13 +96,13 @@ func (v *Value) Contains(vs ...*Value) (result bool) {
 }
 
 func (v *Value) Clear() {
-	v.write(func(v *Value) {
+	v.write(func() {
 		v.number.Set(bigZero)
 	})
 }
 
 func (v *Value) IsNotEmpty() (result bool) {
-	v.read(func(v *Value) {
+	v.read(func() {
 		result = v.number.Cmp(bigZero) != 0
 	})
 
@@ -116,7 +116,7 @@ func (v *Value) IsEmpty() (result bool) {
 }
 
 func (v *Value) Clone() (v2 *Value) {
-	v.read(func(v *Value) {
+	v.read(func() {
 		n2 := new(big.Int)
 		n2.Set(v.number)
 
@@ -130,7 +130,7 @@ func (v *Value) Clone() (v2 *Value) {
 }
 
 func (v *Value) Number() (number *big.Int) {
-	v.read(func(v *Value) {
+	v.read(func() {
 		number = v.number
 	})
 
