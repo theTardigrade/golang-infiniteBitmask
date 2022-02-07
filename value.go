@@ -74,7 +74,7 @@ func (v *Value) Uncombine(vs ...*Value) {
 }
 
 func (v *Value) Contains(vs ...*Value) (result bool) {
-	v.write(func(v *Value) {
+	v.read(func(v *Value) {
 		intersection := new(big.Int)
 		intersection.Set(v.number)
 
