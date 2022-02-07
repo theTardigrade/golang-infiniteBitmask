@@ -11,12 +11,16 @@ type Generator struct {
 	mutex        sync.RWMutex
 }
 
+const (
+	generatorValueInitial = 1
+)
+
 func New() (g *Generator) {
 	g = &Generator{
 		valuesByName: make(map[string]Value),
 	}
 
-	g.valueCurrent.i = big.NewInt(0)
+	g.valueCurrent.i = big.NewInt(generatorValueInitial)
 
 	return
 }
@@ -114,7 +118,7 @@ func (g *Generator) valueFromNameReadWrite(name string) (value Value) {
 		value = value.Clone()
 	} else {
 		if g.valueCurrent.i == nil {
-			g.valueCurrent.i = big.NewInt(0)
+			g.valueCurrent.i = big.NewInt(generatorValueInitial)
 		}
 
 		value = g.valueCurrent.Clone()
