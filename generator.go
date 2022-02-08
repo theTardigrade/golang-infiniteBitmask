@@ -224,12 +224,25 @@ func (g *Generator) loadString(input string) (err error) {
 			return
 		}
 
-		n = n[1 : nLen-1]
-		n = strings.ReplaceAll(n, "\\,", ",")
-		n = strings.ReplaceAll(n, "\\\"", "\"")
-		n = strings.ReplaceAll(n, "\\\\", "\\")
+		var nameBuilder strings.Builder
+		var prevRune rune
 
-		g.inner.valuesByName[n] = valueCurrent.Clone()
+		for _, r := range n[1 : nLen-1] {
+			switch r {
+			case '\\', '"', ',':
+				if prevRune == '\\' {
+					nameBuilder.WriteByte(byte(r))
+				}
+			default:
+				nameBuilder.WriteRune(r)
+			}
+
+			prevRune = r
+		}
+
+		name := nameBuilder.String()
+
+		g.inner.valuesByName[name] = valueCurrent.Clone()
 
 		valueCurrent.inner.number.Lsh(valueCurrent.inner.number, 1)
 	}
@@ -254,10 +267,19 @@ func (g *Generator) String() (result string) {
 			builder.WriteByte(',')
 		}
 
-		name := p.inner.name
-		name = strings.ReplaceAll(name, "\\", "\\\\")
-		name = strings.ReplaceAll(name, "\"", "\\\"")
-		name = strings.ReplaceAll(name, ",", "\\,")
+		var nameBuilder strings.Builder
+
+		for _, r := range p.inner.name {
+			switch r {
+			case '\\', '"', ',':
+				nameBuilder.WriteByte('\\')
+				nameBuilder.WriteByte(byte(r))
+			default:
+				nameBuilder.WriteRune(r)
+			}
+		}
+
+		name := nameBuilder.String()
 
 		builder.WriteByte('"')
 		builder.WriteString(name)
