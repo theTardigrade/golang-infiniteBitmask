@@ -107,16 +107,13 @@ func (g *Generator) Values() (values []*Value) {
 	return
 }
 
-func (g *Generator) Pairs() (pairs []Pair) {
+func (g *Generator) Pairs() (pairs []*Pair) {
 	g.read(func() {
-		pairs = make([]Pair, len(g.inner.valuesByName))
+		pairs = make([]*Pair, len(g.inner.valuesByName))
 
 		var i int
 		for n, v := range g.inner.valuesByName {
-			pairs[i] = Pair{
-				name:  n,
-				value: v,
-			}
+			pairs[i] = newPair(n, v)
 			i++
 		}
 	})
@@ -223,7 +220,7 @@ func (g *Generator) String() (result string) {
 	pairs := g.Pairs()
 
 	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].value.Number().Cmp(pairs[j].value.Number()) == -1
+		return pairs[i].inner.value.inner.number.Cmp(pairs[j].inner.value.inner.number) == -1
 	})
 
 	var builder strings.Builder
@@ -237,7 +234,7 @@ func (g *Generator) String() (result string) {
 		}
 
 		builder.WriteByte('"')
-		builder.WriteString(strings.ReplaceAll(p.name, "\"", "\\\""))
+		builder.WriteString(strings.ReplaceAll(p.inner.name, "\"", "\\\""))
 		builder.WriteByte('"')
 
 		i++
