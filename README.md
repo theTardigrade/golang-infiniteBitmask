@@ -21,14 +21,14 @@ func main() {
 	pause := g.ValueFromName("pause")
 	reset := g.ValueFromName("reset")
 
-	fmt.Println("start:", start.Number().Text(2)) // 1
-	fmt.Println("stop:", stop.Number().Text(2)) // 10
-	fmt.Println("pause:", pause.Number().Text(2)) // 100
-	fmt.Println("reset:", reset.Number().Text(2)) // 1000
+	fmt.Println("start:", start.String())
+	fmt.Println("stop:", stop.String())
+	fmt.Println("pause:", pause.String())
+	fmt.Println("reset:", reset.String())
 
 	startAndReset := g.ValueFromNames("start", "reset")
 
-	fmt.Println("start & reset:", startAndReset.Number().Text(2)) // 1001
+	fmt.Println("start & reset:", startAndReset.String())
 
 	if startAndReset.Number().Int64() == start.Number().Int64()|reset.Number().Int64() {
 		fmt.Println("match [1]")
@@ -39,6 +39,10 @@ func main() {
 
 	if startAndReset.Equal(startAndReset2) {
 		fmt.Println("match [2]")
+	}
+
+	if startAndReset.String() == startAndReset2.String() {
+		fmt.Println("match [3]")
 	}
 }
 ```
