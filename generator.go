@@ -114,7 +114,7 @@ func (g *Generator) valueFromNameReadWrite(name string) (value *Value) {
 	if found {
 		value = value.Clone()
 	} else {
-		if g.valueCurrent == nil || g.valueCurrent.number == nil {
+		if g.valueCurrent == nil {
 			g.valueCurrent = g.newValue(generatorValueNumberInitial)
 		}
 
