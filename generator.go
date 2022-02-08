@@ -1,6 +1,8 @@
 package infiniteBitmask
 
 import (
+	"sort"
+	"strings"
 	"sync"
 )
 
@@ -148,6 +150,40 @@ func (g *Generator) valueFromNameReadWrite(name string) (value *Value) {
 			g.inner.valuesByName[name] = value.Clone()
 		}
 	})
+
+	return
+}
+
+func (g *Generator) String() (result string) {
+	names := g.Names()
+
+	sort.Slice(names, func(i, j int) bool {
+		vI := g.ValueFromName(names[i])
+		vJ := g.ValueFromName(names[j])
+
+		return vI.Number().Cmp(vJ.Number()) == -1
+	})
+
+	var builder strings.Builder
+
+	builder.WriteByte('[')
+
+	var i int
+	for _, n := range names {
+		if i > 0 {
+			builder.WriteByte(',')
+		}
+
+		builder.WriteByte('"')
+		builder.WriteString(strings.ReplaceAll(n, "\"", "\\\""))
+		builder.WriteByte('"')
+
+		i++
+	}
+
+	builder.WriteByte('}')
+
+	result = builder.String()
 
 	return
 }
