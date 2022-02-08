@@ -53,5 +53,9 @@ func main() {
 	}
 
 	fmt.Println(g.String()) // ["start","stop","pause","reset"]
+
+	if g2 := bitmask.NewGeneratorFromString(g.String()); g.String() == g2.String() {
+		fmt.Println("match [5]")
+	}
 }
 ```
