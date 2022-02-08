@@ -49,8 +49,20 @@ func (v *Value) checkGeneratorMatch(v2 *Value) {
 	}
 }
 
+// write method should be called on value first
+func (v *Value) initNumberIfNecessary() (wasNecessary bool) {
+	if v.number == nil {
+		v.number = new(big.Int)
+		wasNecessary = true
+	}
+
+	return
+}
+
 func (v *Value) Combine(vs ...*Value) {
 	v.write(func() {
+		v.initNumberIfNecessary()
+
 		for _, v2 := range vs {
 			v2.read(func() {
 				v.checkGeneratorMatch(v2)
@@ -63,6 +75,10 @@ func (v *Value) Combine(vs ...*Value) {
 
 func (v *Value) Uncombine(vs ...*Value) {
 	v.write(func() {
+		if v.initNumberIfNecessary() {
+			return
+		}
+
 		for _, v2 := range vs {
 			v2.read(func() {
 				v.checkGeneratorMatch(v2)
@@ -78,6 +94,10 @@ func (v *Value) Uncombine(vs ...*Value) {
 
 func (v *Value) Contains(vs ...*Value) (result bool) {
 	v.read(func() {
+		if v.number == nil {
+			return
+		}
+
 		intersection := new(big.Int)
 		intersection.Set(v.number)
 
@@ -97,12 +117,20 @@ func (v *Value) Contains(vs ...*Value) (result bool) {
 
 func (v *Value) Clear() {
 	v.write(func() {
+		if v.initNumberIfNecessary() {
+			return
+		}
+
 		v.number.Set(bigZero)
 	})
 }
 
 func (v *Value) IsNotEmpty() (result bool) {
 	v.read(func() {
+		if v.number == nil {
+			return
+		}
+
 		result = v.number.Cmp(bigZero) != 0
 	})
 
@@ -118,7 +146,10 @@ func (v *Value) IsEmpty() (result bool) {
 func (v *Value) Clone() (v2 *Value) {
 	v.read(func() {
 		n2 := new(big.Int)
-		n2.Set(v.number)
+
+		if v.number != nil {
+			n2.Set(v.number)
+		}
 
 		v2 = &Value{
 			number:    n2,
