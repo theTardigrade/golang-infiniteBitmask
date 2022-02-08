@@ -173,10 +173,6 @@ func (v *Value) Equal(v2 *Value) (result bool) {
 
 func (v *Value) String() (result string) {
 	v.read(func() {
-		if v.inner.number == nil {
-			result = "0"
-		}
-
 		result = v.inner.number.Text(2)
 	})
 
