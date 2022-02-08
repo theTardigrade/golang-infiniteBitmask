@@ -29,6 +29,14 @@ func NewGenerator() (g *Generator) {
 	return
 }
 
+func NewGeneratorFromString(input string) (g *Generator) {
+	g = NewGenerator()
+
+	g.loadString(input)
+
+	return
+}
+
 func (g *Generator) initInner() {
 	g.inner.valuesByName = make(map[string]*Value)
 	g.inner.valueCurrent = g.newValue(generatorValueNumberInitial)
@@ -150,6 +158,43 @@ func (g *Generator) valueFromNameReadWrite(name string) (value *Value) {
 			g.inner.valuesByName[name] = value.Clone()
 		}
 	})
+
+	return
+}
+
+func (g *Generator) loadString(input string) (err error) {
+	inputLen := len(input)
+
+	if inputLen < 2 {
+		err = ErrParseString
+		return
+	}
+
+	if input[0] != '[' || input[inputLen-1] != ']' {
+		err = ErrParseString
+		return
+	}
+
+	inputSplit := strings.Split(input[1:inputLen-1], ",")
+
+	for _, n := range inputSplit {
+		nLen := len(n)
+
+		if nLen < 2 {
+			err = ErrParseString
+			return
+		}
+
+		if n[0] != '"' || n[nLen-1] != '"' {
+			err = ErrParseString
+			return
+		}
+
+		n = n[1 : inputLen-1]
+		n = strings.ReplaceAll(n, "\\\"", "\"")
+
+		g.valueFromNameReadWrite(n)
+	}
 
 	return
 }
