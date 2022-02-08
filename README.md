@@ -16,20 +16,21 @@ import (
 func main() {
 	g := bitmask.NewGenerator()
 
-	startBitmask := g.ValueFromName("start")
-	stopBitmask := g.ValueFromName("stop")
-	pauseBitmask := g.ValueFromName("pause")
-	resetBitmask := g.ValueFromName("reset")
+	start := g.ValueFromName("start")
+	stop := g.ValueFromName("stop")
+	pause := g.ValueFromName("pause")
+	reset := g.ValueFromName("reset")
 
-	fmt.Println("start:", startBitmask.Number().Text(2)) // 1
-	fmt.Println("stop:", stopBitmask.Number().Text(2)) // 10
-	fmt.Println("pause:", pauseBitmask.Number().Text(2)) // 100
-	fmt.Println("reset:", resetBitmask.Number().Text(2)) // 1000
+	fmt.Println("start:", start.Number().Text(2))
+	fmt.Println("stop:", stop.Number().Text(2))
+	fmt.Println("pause:", pause.Number().Text(2))
+	fmt.Println("reset:", reset.Number().Text(2))
 
-	startAndResetBitmask := g.ValueFromNames("start", "reset")
+	startAndReset := g.ValueFromNames("start", "reset")
 
-	if startAndResetBitmask.Number().Int64() == startBitmask.Number().Int64()|resetBitmask.Number().Int64() {
-		fmt.Println("start and reset:", startAndResetBitmask.Number().Text(2)) // 1001
+	if startAndReset.Number().Int64() == start.Number().Int64()|reset.Number().Int64() {
+		fmt.Println("start & reset:", startAndReset.Number().Text(2))
 	}
 }
+
 ```
