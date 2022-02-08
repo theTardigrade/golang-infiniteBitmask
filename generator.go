@@ -5,6 +5,11 @@ import (
 )
 
 type Generator struct {
+	inner       generatorInner
+	innerInited bool
+}
+
+type generatorInner struct {
 	valueCurrent *Value
 	valuesByName map[string]*Value
 	mutex        sync.RWMutex
@@ -15,13 +20,17 @@ const (
 )
 
 func NewGenerator() (g *Generator) {
-	g = &Generator{
-		valuesByName: make(map[string]*Value),
-	}
+	g = &Generator{}
 
-	g.valueCurrent = g.newValue(generatorValueNumberInitial)
+	g.initInner()
 
 	return
+}
+
+func (g *Generator) initInner() {
+	g.inner.valuesByName = make(map[string]*Value)
+	g.inner.valueCurrent = g.newValue(generatorValueNumberInitial)
+	g.innerInited = true
 }
 
 func (g *Generator) newValue(number uint8) (v *Value) {
@@ -30,32 +39,60 @@ func (g *Generator) newValue(number uint8) (v *Value) {
 	return
 }
 
-func (g *Generator) Names() (names []string) {
-	defer g.mutex.RUnlock()
-	g.mutex.RLock()
-
-	names = make([]string, len(g.valuesByName))
-
-	var i int
-	for n := range g.valuesByName {
-		names[i] = n
-		i++
+func (g *Generator) read(handler func()) {
+	if g == nil {
+		return
 	}
+
+	if !g.innerInited {
+		g.initInner()
+	}
+
+	defer g.inner.mutex.RUnlock()
+	g.inner.mutex.RLock()
+
+	handler()
+}
+
+func (g *Generator) write(handler func()) {
+	if g == nil {
+		return
+	}
+
+	if !g.innerInited {
+		g.initInner()
+	}
+
+	defer g.inner.mutex.Unlock()
+	g.inner.mutex.Lock()
+
+	handler()
+}
+
+func (g *Generator) Names() (names []string) {
+	g.read(func() {
+		names = make([]string, len(g.inner.valuesByName))
+
+		var i int
+		for n := range g.inner.valuesByName {
+			names[i] = n
+			i++
+		}
+	})
 
 	return
 }
 
 func (g *Generator) Values() (values []*Value) {
-	defer g.mutex.RUnlock()
-	g.mutex.RLock()
+	g.read(func() {
+		values = make([]*Value, len(g.inner.valuesByName))
 
-	values = make([]*Value, len(g.valuesByName))
-
-	var i int
-	for _, v := range g.valuesByName {
-		values[i] = v
-		i++
-	}
+		var i int
+		for _, v := range g.inner.valuesByName {
+			values[i] = v
+			i++
+		}
+	})
 
 	return
 }
@@ -84,46 +121,33 @@ func (g *Generator) ValueFromNames(names ...string) (value *Value) {
 }
 
 func (g *Generator) valueFromNameReadOnly(name string) (value *Value, found bool) {
-	defer g.mutex.RUnlock()
-	g.mutex.RLock()
-
-	if g.valuesByName == nil {
-		return
-	}
-
-	value, found = g.valuesByName[name]
-	if found {
-		value = value.Clone()
-	}
+	g.read(func() {
+		value, found = g.inner.valuesByName[name]
+		if found {
+			value = value.Clone()
+		}
+	})
 
 	return
 }
 
 func (g *Generator) valueFromNameReadWrite(name string) (value *Value) {
-	defer g.mutex.Unlock()
-	g.mutex.Lock()
+	g.write(func() {
+		var found bool
 
-	var found bool
+		value, found = g.inner.valuesByName[name]
 
-	if g.valuesByName != nil {
-		value, found = g.valuesByName[name]
-	} else {
-		g.valuesByName = make(map[string]*Value)
-	}
+		if found {
+			value = value.Clone()
+		} else {
+			valueCurrent := g.inner.valueCurrent
+			value = valueCurrent.Clone()
 
-	if found {
-		value = value.Clone()
-	} else {
-		if g.valueCurrent == nil {
-			g.valueCurrent = g.newValue(generatorValueNumberInitial)
+			valueCurrent.inner.number.Lsh(valueCurrent.inner.number, 1)
+
+			g.inner.valuesByName[name] = value.Clone()
 		}
-
-		value = g.valueCurrent.Clone()
-
-		g.valueCurrent.inner.number.Lsh(g.valueCurrent.inner.number, 1)
-
-		g.valuesByName[name] = value.Clone()
-	}
+	})
 
 	return
 }
