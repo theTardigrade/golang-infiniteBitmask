@@ -163,6 +163,8 @@ func (v *Value) Clone() (v2 *Value) {
 func (v *Value) Equal(v2 *Value) (result bool) {
 	v.read(func() {
 		v2.read(func() {
+			v.checkGeneratorMatch(v2)
+
 			if v == nil {
 				if v2 == nil {
 					result = true
