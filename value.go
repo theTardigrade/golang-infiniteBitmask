@@ -182,6 +182,16 @@ func (v *Value) Equal(v2 *Value) (result bool) {
 	return
 }
 
+func (v *Value) String() (result string) {
+	if v.number == nil {
+		result = "0"
+	}
+
+	result = v.number.Text(2)
+
+	return
+}
+
 func (v *Value) Number() (number *big.Int) {
 	v.read(func() {
 		number = v.number
