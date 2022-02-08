@@ -189,16 +189,14 @@ func (g *Generator) loadString(input string) (err error) {
 		return
 	}
 
-	input = input[1 : inputLen-1]
-
 	inputSplit := make([]string, 0, inputLen/3+1)
 
 	{
 		var currInputSplitBuilder strings.Builder
 		var prevRune rune
 
-		for _, r := range input {
-			if r == ',' && prevRune == '"' {
+		for _, r := range input[1 : inputLen-1] {
+			if r == ',' && prevRune != '\\' {
 				if currInputSplitBuilder.Len() < 2 {
 					err = ErrLoadString
 					return
@@ -211,6 +209,15 @@ func (g *Generator) loadString(input string) (err error) {
 			}
 
 			prevRune = r
+		}
+
+		if l := currInputSplitBuilder.Len(); l > 0 {
+			if l < 2 {
+				err = ErrLoadString
+				return
+			}
+
+			inputSplit = append(inputSplit, currInputSplitBuilder.String())
 		}
 	}
 
