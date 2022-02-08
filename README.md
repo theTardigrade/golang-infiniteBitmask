@@ -30,7 +30,7 @@ func main() {
 
 	fmt.Println("start and reset:", startAndReset.String()) // 1001
 
-	if startAndReset.Number().Int64() == start.Number().Int64()|reset.Number().Int64() {
+	if startAndReset.Number().Uint64() == start.Number().Uint64()|reset.Number().Uint64() {
 		fmt.Println("match [1]")
 	}
 
@@ -43,6 +43,13 @@ func main() {
 
 	if startAndReset.String() == startAndReset2.String() {
 		fmt.Println("match [3]")
+	}
+
+	empty := start.Clone()
+	empty.Clear()
+
+	if empty.Number().Uint64() == 0 {
+		fmt.Println("match [4]")
 	}
 }
 ```
