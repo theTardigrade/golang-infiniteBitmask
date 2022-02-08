@@ -160,6 +160,28 @@ func (v *Value) Clone() (v2 *Value) {
 	return
 }
 
+func (v *Value) Equal(v2 *Value) (result bool) {
+	v.read(func() {
+		v2.read(func() {
+			if v == nil {
+				if v2 == nil {
+					result = true
+				}
+
+				return
+			}
+
+			if v2 == nil {
+				return
+			}
+
+			result = v.number.Cmp(v2.number) == 0
+		})
+	})
+
+	return
+}
+
 func (v *Value) Number() (number *big.Int) {
 	v.read(func() {
 		number = v.number

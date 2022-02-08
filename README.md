@@ -32,5 +32,4 @@ func main() {
 		fmt.Println("start & reset:", startAndReset.Number().Text(2))
 	}
 }
-
 ```
