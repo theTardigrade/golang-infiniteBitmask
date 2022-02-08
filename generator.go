@@ -200,13 +200,23 @@ func (g *Generator) loadString(input string) (err error) {
 }
 
 func (g *Generator) String() (result string) {
-	names := g.Names()
+	var names []string
 
-	sort.Slice(names, func(i, j int) bool {
-		vI := g.ValueFromName(names[i])
-		vJ := g.ValueFromName(names[j])
+	g.read(func() {
+		names = make([]string, len(g.inner.valuesByName))
 
-		return vI.Number().Cmp(vJ.Number()) == -1
+		var i int
+		for n := range g.inner.valuesByName {
+			names[i] = n
+			i++
+		}
+
+		sort.Slice(names, func(i, j int) bool {
+			vI := g.inner.valuesByName[names[i]]
+			vJ := g.inner.valuesByName[names[j]]
+
+			return vI.Number().Cmp(vJ.Number()) == -1
+		})
 	})
 
 	var builder strings.Builder
