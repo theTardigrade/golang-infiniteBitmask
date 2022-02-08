@@ -28,8 +28,17 @@ func main() {
 
 	startAndReset := g.ValueFromNames("start", "reset")
 
+	fmt.Println("start & reset:", startAndReset.Number().Text(2))
+
 	if startAndReset.Number().Int64() == start.Number().Int64()|reset.Number().Int64() {
-		fmt.Println("start & reset:", startAndReset.Number().Text(2))
+		fmt.Println("match [1]")
+	}
+
+	startAndReset2 := start.Clone()
+	startAndReset2.Combine(reset)
+
+	if startAndReset.Equal(startAndReset2) {
+		fmt.Println("match [2]")
 	}
 }
 ```
