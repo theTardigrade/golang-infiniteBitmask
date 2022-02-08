@@ -107,16 +107,15 @@ func (g *Generator) Values() (values []*Value) {
 	return
 }
 
-func (g *Generator) Entries() (entries []Entry) {
+func (g *Generator) Pairs() (pairs []Pair) {
 	g.read(func() {
-		entries = make([]Entry, len(g.inner.valuesByName))
+		pairs = make([]Pair, len(g.inner.valuesByName))
 
 		var i int
 		for n, v := range g.inner.valuesByName {
-			entries[i] = Entry{
-				name:      n,
-				value:     v,
-				generator: g,
+			pairs[i] = Pair{
+				name:  n,
+				value: v,
 			}
 			i++
 		}
@@ -221,23 +220,10 @@ func (g *Generator) loadString(input string) (err error) {
 }
 
 func (g *Generator) String() (result string) {
-	var entries []Entry
+	pairs := g.Pairs()
 
-	g.read(func() {
-		entries = make([]Entry, len(g.inner.valuesByName))
-
-		var i int
-		for n, v := range g.inner.valuesByName {
-			entries[i] = Entry{
-				name:  n,
-				value: v,
-			}
-			i++
-		}
-	})
-
-	sort.Slice(entries, func(i, j int) bool {
-		return entries[i].value.Number().Cmp(entries[j].value.Number()) == -1
+	sort.Slice(pairs, func(i, j int) bool {
+		return pairs[i].value.Number().Cmp(pairs[j].value.Number()) == -1
 	})
 
 	var builder strings.Builder
@@ -245,13 +231,13 @@ func (g *Generator) String() (result string) {
 	builder.WriteByte('[')
 
 	var i int
-	for _, e := range entries {
+	for _, p := range pairs {
 		if i > 0 {
 			builder.WriteByte(',')
 		}
 
 		builder.WriteByte('"')
-		builder.WriteString(strings.ReplaceAll(e.name, "\"", "\\\""))
+		builder.WriteString(strings.ReplaceAll(p.name, "\"", "\\\""))
 		builder.WriteByte('"')
 
 		i++
