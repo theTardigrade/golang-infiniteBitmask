@@ -189,16 +189,35 @@ func (g *Generator) loadString(input string) (err error) {
 		return
 	}
 
-	inputSplit := strings.Split(input[1:inputLen-1], ",")
+	input = input[1 : inputLen-1]
+
+	inputSplit := make([]string, 0, inputLen/3+1)
+
+	{
+		var currInputSplitBuilder strings.Builder
+		var prevRune rune
+
+		for _, r := range input {
+			if r == ',' && prevRune == '"' {
+				if currInputSplitBuilder.Len() < 2 {
+					err = ErrLoadString
+					return
+				}
+
+				inputSplit = append(inputSplit, currInputSplitBuilder.String())
+				currInputSplitBuilder.Reset()
+			} else {
+				currInputSplitBuilder.WriteRune(r)
+			}
+
+			prevRune = r
+		}
+	}
+
 	valueCurrent := g.inner.valueCurrent
 
 	for _, n := range inputSplit {
 		nLen := len(n)
-
-		if nLen < 2 {
-			err = ErrLoadString
-			return
-		}
 
 		if n[0] != '"' || n[nLen-1] != '"' {
 			err = ErrLoadString
@@ -206,7 +225,9 @@ func (g *Generator) loadString(input string) (err error) {
 		}
 
 		n = n[1 : nLen-1]
+		n = strings.ReplaceAll(n, "\\,", ",")
 		n = strings.ReplaceAll(n, "\\\"", "\"")
+		n = strings.ReplaceAll(n, "\\\\", "\\")
 
 		g.inner.valuesByName[n] = valueCurrent.Clone()
 
@@ -233,8 +254,13 @@ func (g *Generator) String() (result string) {
 			builder.WriteByte(',')
 		}
 
+		name := p.inner.name
+		name = strings.ReplaceAll(name, "\\", "\\\\")
+		name = strings.ReplaceAll(name, "\"", "\\\"")
+		name = strings.ReplaceAll(name, ",", "\\,")
+
 		builder.WriteByte('"')
-		builder.WriteString(strings.ReplaceAll(p.inner.name, "\"", "\\\""))
+		builder.WriteString(name)
 		builder.WriteByte('"')
 
 		i++
