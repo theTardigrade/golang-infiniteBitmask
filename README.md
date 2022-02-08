@@ -29,7 +29,7 @@ func main() {
 	startAndResetBitmask := g.ValueFromNames("start", "reset")
 
 	if startAndResetBitmask.Number().Int64() == startBitmask.Number().Int64()|resetBitmask.Number().Int64() {
-		fmt.Println("start & reset:", startAndResetBitmask.Number().Text(2)) // 1001
+		fmt.Println("start and reset:", startAndResetBitmask.Number().Text(2)) // 1001
 	}
 }
 ```
