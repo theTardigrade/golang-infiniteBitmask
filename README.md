@@ -51,5 +51,7 @@ func main() {
 	if empty.Number().Uint64() == 0 {
 		fmt.Println("match [4]")
 	}
+
+	fmt.Println(g.String()) // ["start","stop","pause","reset"]
 }
 ```
