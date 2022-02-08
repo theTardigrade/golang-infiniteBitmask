@@ -24,7 +24,7 @@ func NewGenerator() (g *Generator) {
 	return
 }
 
-func (g *Generator) newValue(number int64) (v *Value) {
+func (g *Generator) newValue(number uint8) (v *Value) {
 	v = newValue(number, g)
 
 	return
@@ -77,7 +77,7 @@ func (g *Generator) ValueFromNames(names ...string) (value *Value) {
 	for _, n := range names {
 		v := g.ValueFromName(n)
 
-		value.number.Or(value.number, v.number)
+		value.inner.number.Or(value.inner.number, v.inner.number)
 	}
 
 	return
@@ -120,7 +120,7 @@ func (g *Generator) valueFromNameReadWrite(name string) (value *Value) {
 
 		value = g.valueCurrent.Clone()
 
-		g.valueCurrent.number.Lsh(g.valueCurrent.number, 1)
+		g.valueCurrent.inner.number.Lsh(g.valueCurrent.inner.number, 1)
 
 		g.valuesByName[name] = value.Clone()
 	}

@@ -6,18 +6,29 @@ import (
 )
 
 type Value struct {
+	inner *valueInner
+}
+
+type valueInner struct {
 	number    *big.Int
 	generator *Generator
 	mutex     sync.RWMutex
 }
 
-func newValue(number int64, generator *Generator) (v *Value) {
-	v = &Value{
-		number:    big.NewInt(number),
-		generator: generator,
-	}
+func newValue(number uint8, generator *Generator) (v *Value) {
+	v = &Value{}
+
+	v.initInner(generator)
+	v.inner.number.SetUint64(uint64(number))
 
 	return
+}
+
+func (v *Value) initInner(generator *Generator) {
+	v.inner = &valueInner{
+		number:    new(big.Int),
+		generator: generator,
+	}
 }
 
 func (v *Value) read(handler func()) {
@@ -25,8 +36,12 @@ func (v *Value) read(handler func()) {
 		return
 	}
 
-	defer v.mutex.RUnlock()
-	v.mutex.RLock()
+	if v.inner == nil {
+		v.initInner(nil)
+	}
+
+	defer v.inner.mutex.RUnlock()
+	v.inner.mutex.RLock()
 
 	handler()
 }
@@ -36,38 +51,29 @@ func (v *Value) write(handler func()) {
 		return
 	}
 
-	defer v.mutex.Unlock()
-	v.mutex.Lock()
+	if v.inner == nil {
+		v.initInner(nil)
+	}
+
+	defer v.inner.mutex.Unlock()
+	v.inner.mutex.Lock()
 
 	handler()
 }
 
-// read or write method should be called on both values first
 func (v *Value) checkGeneratorMatch(v2 *Value) {
-	if v.generator != v2.generator {
+	if v.inner.generator != v2.inner.generator {
 		panic(ErrValuesMismatched)
 	}
 }
 
-// write method should be called on value first
-func (v *Value) initNumberIfNecessary() (wasNecessary bool) {
-	if v.number == nil {
-		v.number = new(big.Int)
-		wasNecessary = true
-	}
-
-	return
-}
-
 func (v *Value) Combine(vs ...*Value) {
 	v.write(func() {
-		v.initNumberIfNecessary()
-
 		for _, v2 := range vs {
 			v2.read(func() {
 				v.checkGeneratorMatch(v2)
 
-				v.number.Or(v.number, v2.number)
+				v.inner.number.Or(v.inner.number, v2.inner.number)
 			})
 		}
 	})
@@ -75,18 +81,14 @@ func (v *Value) Combine(vs ...*Value) {
 
 func (v *Value) Uncombine(vs ...*Value) {
 	v.write(func() {
-		if v.initNumberIfNecessary() {
-			return
-		}
-
 		for _, v2 := range vs {
 			v2.read(func() {
 				v.checkGeneratorMatch(v2)
 
 				mask := new(big.Int)
-				mask.Not(v2.number)
+				mask.Not(v2.inner.number)
 
-				v.number.And(v.number, mask)
+				v.inner.number.And(v.inner.number, mask)
 			})
 		}
 	})
@@ -94,18 +96,14 @@ func (v *Value) Uncombine(vs ...*Value) {
 
 func (v *Value) Contains(vs ...*Value) (result bool) {
 	v.read(func() {
-		if v.number == nil {
-			return
-		}
-
 		intersection := new(big.Int)
-		intersection.Set(v.number)
+		intersection.Set(v.inner.number)
 
 		for _, v2 := range vs {
 			v2.read(func() {
 				v.checkGeneratorMatch(v2)
 
-				intersection.And(intersection, v2.number)
+				intersection.And(intersection, v2.inner.number)
 			})
 		}
 
@@ -117,21 +115,17 @@ func (v *Value) Contains(vs ...*Value) (result bool) {
 
 func (v *Value) Clear() {
 	v.write(func() {
-		if v.initNumberIfNecessary() {
-			return
-		}
-
-		v.number.Set(bigZero)
+		v.inner.number.Set(bigZero)
 	})
 }
 
 func (v *Value) IsNotEmpty() (result bool) {
 	v.read(func() {
-		if v.number == nil {
+		if v.inner.number == nil {
 			return
 		}
 
-		result = v.number.Cmp(bigZero) != 0
+		result = v.inner.number.Cmp(bigZero) != 0
 	})
 
 	return
@@ -146,38 +140,28 @@ func (v *Value) IsEmpty() (result bool) {
 func (v *Value) Clone() (v2 *Value) {
 	v.read(func() {
 		n2 := new(big.Int)
+		n2.Set(v.inner.number)
 
-		if v.number != nil {
-			n2.Set(v.number)
-		}
+		v2 = &Value{}
 
-		v2 = &Value{
-			number:    n2,
-			generator: v.generator,
-		}
+		v2.initInner(v.inner.generator)
+		v2.inner.number = n2
 	})
 
 	return
 }
 
 func (v *Value) Equal(v2 *Value) (result bool) {
+	if v == nil && v2 == nil {
+		result = true
+		return
+	}
+
 	v.read(func() {
 		v2.read(func() {
 			v.checkGeneratorMatch(v2)
 
-			if v == nil {
-				if v2 == nil {
-					result = true
-				}
-
-				return
-			}
-
-			if v2 == nil {
-				return
-			}
-
-			result = v.number.Cmp(v2.number) == 0
+			result = v.inner.number.Cmp(v2.inner.number) == 0
 		})
 	})
 
@@ -186,11 +170,11 @@ func (v *Value) Equal(v2 *Value) (result bool) {
 
 func (v *Value) String() (result string) {
 	v.read(func() {
-		if v.number == nil {
+		if v.inner.number == nil {
 			result = "0"
 		}
 
-		result = v.number.Text(2)
+		result = v.inner.number.Text(2)
 	})
 
 	return
@@ -198,7 +182,7 @@ func (v *Value) String() (result string) {
 
 func (v *Value) Number() (number *big.Int) {
 	v.read(func() {
-		number = v.number
+		number = v.inner.number
 	})
 
 	return
@@ -206,7 +190,7 @@ func (v *Value) Number() (number *big.Int) {
 
 func (v *Value) Generator() (generator *Generator) {
 	v.read(func() {
-		generator = v.generator
+		generator = v.inner.generator
 	})
 
 	return
