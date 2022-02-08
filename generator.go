@@ -181,7 +181,7 @@ func (g *Generator) String() (result string) {
 		i++
 	}
 
-	builder.WriteByte('}')
+	builder.WriteByte(']')
 
 	result = builder.String()
 
