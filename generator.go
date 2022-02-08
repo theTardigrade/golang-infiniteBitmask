@@ -107,6 +107,24 @@ func (g *Generator) Values() (values []*Value) {
 	return
 }
 
+func (g *Generator) Entries() (entries []Entry) {
+	g.read(func() {
+		entries = make([]Entry, len(g.inner.valuesByName))
+
+		var i int
+		for n, v := range g.inner.valuesByName {
+			entries[i] = Entry{
+				name:      n,
+				value:     v,
+				generator: g,
+			}
+			i++
+		}
+	})
+
+	return
+}
+
 func (g *Generator) ValueFromName(name string) (value *Value) {
 	value, found := g.valueFromNameReadOnly(name)
 	if found {
@@ -176,6 +194,7 @@ func (g *Generator) loadString(input string) (err error) {
 	}
 
 	inputSplit := strings.Split(input[1:inputLen-1], ",")
+	valueCurrent := g.inner.valueCurrent
 
 	for _, n := range inputSplit {
 		nLen := len(n)
@@ -193,30 +212,32 @@ func (g *Generator) loadString(input string) (err error) {
 		n = n[1 : nLen-1]
 		n = strings.ReplaceAll(n, "\\\"", "\"")
 
-		g.valueFromNameReadWrite(n)
+		g.inner.valuesByName[n] = valueCurrent.Clone()
+
+		valueCurrent.inner.number.Lsh(valueCurrent.inner.number, 1)
 	}
 
 	return
 }
 
 func (g *Generator) String() (result string) {
-	var names []string
+	var entries []Entry
 
 	g.read(func() {
-		names = make([]string, len(g.inner.valuesByName))
+		entries = make([]Entry, len(g.inner.valuesByName))
 
 		var i int
-		for n := range g.inner.valuesByName {
-			names[i] = n
+		for n, v := range g.inner.valuesByName {
+			entries[i] = Entry{
+				name:  n,
+				value: v,
+			}
 			i++
 		}
+	})
 
-		sort.Slice(names, func(i, j int) bool {
-			vI := g.inner.valuesByName[names[i]]
-			vJ := g.inner.valuesByName[names[j]]
-
-			return vI.Number().Cmp(vJ.Number()) == -1
-		})
+	sort.Slice(entries, func(i, j int) bool {
+		return entries[i].value.Number().Cmp(entries[j].value.Number()) == -1
 	})
 
 	var builder strings.Builder
@@ -224,13 +245,13 @@ func (g *Generator) String() (result string) {
 	builder.WriteByte('[')
 
 	var i int
-	for _, n := range names {
+	for _, e := range entries {
 		if i > 0 {
 			builder.WriteByte(',')
 		}
 
 		builder.WriteByte('"')
-		builder.WriteString(strings.ReplaceAll(n, "\"", "\\\""))
+		builder.WriteString(strings.ReplaceAll(e.name, "\"", "\\\""))
 		builder.WriteByte('"')
 
 		i++
