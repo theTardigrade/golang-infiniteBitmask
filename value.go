@@ -6,7 +6,8 @@ import (
 )
 
 type Value struct {
-	inner *valueInner
+	inner       valueInner
+	innerInited bool
 }
 
 type valueInner struct {
@@ -25,10 +26,9 @@ func newValue(number uint8, generator *Generator) (v *Value) {
 }
 
 func (v *Value) initInner(generator *Generator) {
-	v.inner = &valueInner{
-		number:    new(big.Int),
-		generator: generator,
-	}
+	v.inner.number = new(big.Int)
+	v.inner.generator = generator
+	v.innerInited = true
 }
 
 func (v *Value) read(handler func()) {
@@ -36,7 +36,7 @@ func (v *Value) read(handler func()) {
 		return
 	}
 
-	if v.inner == nil {
+	if !v.innerInited {
 		v.initInner(nil)
 	}
 
@@ -51,7 +51,7 @@ func (v *Value) write(handler func()) {
 		return
 	}
 
-	if v.inner == nil {
+	if !v.innerInited {
 		v.initInner(nil)
 	}
 
