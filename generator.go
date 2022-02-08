@@ -190,7 +190,7 @@ func (g *Generator) loadString(input string) (err error) {
 			return
 		}
 
-		n = n[1 : inputLen-1]
+		n = n[1 : nLen-1]
 		n = strings.ReplaceAll(n, "\\\"", "\"")
 
 		g.valueFromNameReadWrite(n)
