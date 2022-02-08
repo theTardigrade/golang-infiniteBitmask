@@ -155,11 +155,6 @@ func (v *Value) Clone() (v2 *Value) {
 }
 
 func (v *Value) Equal(v2 *Value) (result bool) {
-	if v == nil && v2 == nil {
-		result = true
-		return
-	}
-
 	v.read(func() {
 		v2.read(func() {
 			v.checkGeneratorMatch(v2)
@@ -167,6 +162,10 @@ func (v *Value) Equal(v2 *Value) (result bool) {
 			result = v.inner.number.Cmp(v2.inner.number) == 0
 		})
 	})
+
+	if !result && v == nil && v2 == nil {
+		result = true
+	}
 
 	return
 }
