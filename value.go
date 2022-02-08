@@ -20,7 +20,10 @@ func newValue(number uint8, generator *Generator) (v *Value) {
 	v = &Value{}
 
 	v.initInner(generator)
-	v.inner.number.SetUint64(uint64(number))
+
+	if number != 0 {
+		v.inner.number.SetUint64(uint64(number))
+	}
 
 	return
 }
