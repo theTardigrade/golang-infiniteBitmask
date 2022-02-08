@@ -183,11 +183,13 @@ func (v *Value) Equal(v2 *Value) (result bool) {
 }
 
 func (v *Value) String() (result string) {
-	if v.number == nil {
-		result = "0"
-	}
+	v.read(func() {
+		if v.number == nil {
+			result = "0"
+		}
 
-	result = v.number.Text(2)
+		result = v.number.Text(2)
+	})
 
 	return
 }
