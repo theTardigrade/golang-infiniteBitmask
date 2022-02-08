@@ -180,12 +180,12 @@ func (g *Generator) loadString(input string) (err error) {
 	inputLen := len(input)
 
 	if inputLen < 2 {
-		err = ErrParseString
+		err = ErrLoadString
 		return
 	}
 
 	if input[0] != '[' || input[inputLen-1] != ']' {
-		err = ErrParseString
+		err = ErrLoadString
 		return
 	}
 
@@ -196,12 +196,12 @@ func (g *Generator) loadString(input string) (err error) {
 		nLen := len(n)
 
 		if nLen < 2 {
-			err = ErrParseString
+			err = ErrLoadString
 			return
 		}
 
 		if n[0] != '"' || n[nLen-1] != '"' {
-			err = ErrParseString
+			err = ErrLoadString
 			return
 		}
 
