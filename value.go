@@ -19,7 +19,7 @@ type valueInner struct {
 func newValue(number uint8, generator *Generator) (v *Value) {
 	v = &Value{}
 
-	v.initInner(generator)
+	v.initInner(nil, generator)
 
 	if number != 0 {
 		v.inner.number.SetUint64(uint64(number))
@@ -28,8 +28,10 @@ func newValue(number uint8, generator *Generator) (v *Value) {
 	return
 }
 
-func (v *Value) initInner(generator *Generator) {
-	v.inner.number = new(big.Int)
+func (v *Value) initInner(number *big.Int, generator *Generator) {
+	if v.inner.number = new(big.Int); number != nil {
+		v.inner.number.Set(number)
+	}
 	v.inner.generator = generator
 	v.innerInited = true
 }
@@ -40,7 +42,7 @@ func (v *Value) read(handler func()) {
 	}
 
 	if !v.innerInited {
-		v.initInner(nil)
+		v.initInner(nil, nil)
 	}
 
 	defer v.inner.mutex.RUnlock()
@@ -55,7 +57,7 @@ func (v *Value) write(handler func()) {
 	}
 
 	if !v.innerInited {
-		v.initInner(nil)
+		v.initInner(nil, nil)
 	}
 
 	defer v.inner.mutex.Unlock()
@@ -142,13 +144,9 @@ func (v *Value) IsEmpty() (result bool) {
 
 func (v *Value) Clone() (v2 *Value) {
 	v.read(func() {
-		n2 := new(big.Int)
-		n2.Set(v.inner.number)
-
 		v2 = &Value{}
 
-		v2.initInner(v.inner.generator)
-		v2.inner.number = n2
+		v2.initInner(v.inner.number, v.inner.generator)
 	})
 
 	return
