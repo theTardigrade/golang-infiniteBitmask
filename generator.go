@@ -121,6 +121,49 @@ func (g *Generator) Pairs() (pairs []*Pair) {
 	return
 }
 
+func (g *Generator) Clone() (g2 *Generator) {
+	g2 = NewGeneratorFromString(g.String())
+
+	return
+}
+
+func (g *Generator) Len() (result int) {
+	g.read(func() {
+		result = len(g.inner.valuesByName)
+	})
+
+	return
+}
+
+func (g *Generator) Equal(g2 *Generator) (result bool) {
+	g.read(func() {
+		g2.read(func() {
+			if len(g.inner.valuesByName) != len(g2.inner.valuesByName) {
+				return
+			}
+
+			if !g.inner.valueCurrent.equalRegardlessOfGenerator(g2.inner.valueCurrent) {
+				return
+			}
+
+			for gName, gValue := range g.inner.valuesByName {
+				g2Value, g2NameFound := g2.inner.valuesByName[gName]
+				if !g2NameFound {
+					return
+				}
+
+				if !gValue.equalRegardlessOfGenerator(g2Value) {
+					return
+				}
+			}
+
+			result = true
+		})
+	})
+
+	return
+}
+
 func (g *Generator) ValueFromName(name string) (value *Value) {
 	value, found := g.valueFromNameReadOnly(name)
 	if found {
