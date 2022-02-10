@@ -131,7 +131,13 @@ func (g *Generator) Pairs() (pairs []*Pair) {
 }
 
 func (g *Generator) Clone() (g2 *Generator) {
-	g2 = NewGeneratorFromString(g.String())
+	g2 = NewGenerator()
+
+	g.read(func() {
+		for n := range g.inner.valuesByName {
+			g2.valueFromNameReadWrite(n)
+		}
+	})
 
 	return
 }
