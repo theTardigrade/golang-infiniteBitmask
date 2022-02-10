@@ -134,9 +134,11 @@ func (g *Generator) Clone() (g2 *Generator) {
 	g2 = NewGenerator()
 
 	g.read(func() {
-		for n := range g.inner.valuesByName {
-			g2.valueFromNameReadWrite(n)
+		for n, v := range g.inner.valuesByName {
+			g2.inner.valuesByName[n] = v.Clone()
 		}
+
+		g2.inner.valueCurrent = g.inner.valueCurrent.Clone()
 	})
 
 	return
