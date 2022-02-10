@@ -9,12 +9,12 @@ import (
 type Generator struct {
 	inner       generatorInner
 	innerInited bool
+	mutex       sync.RWMutex
 }
 
 type generatorInner struct {
 	valueCurrent *Value
 	valuesByName map[string]*Value
-	mutex        sync.RWMutex
 }
 
 const (
@@ -54,14 +54,23 @@ func (g *Generator) read(handler func()) {
 		return
 	}
 
-	if !g.innerInited {
-		g.initInner()
+	var shouldWrite bool
+
+	func() {
+		defer g.mutex.RUnlock()
+		g.mutex.RLock()
+
+		if !g.innerInited {
+			shouldWrite = true
+			return
+		}
+
+		handler()
+	}()
+
+	if shouldWrite {
+		g.write(handler)
 	}
-
-	defer g.inner.mutex.RUnlock()
-	g.inner.mutex.RLock()
-
-	handler()
 }
 
 func (g *Generator) write(handler func()) {
@@ -69,12 +78,12 @@ func (g *Generator) write(handler func()) {
 		return
 	}
 
+	defer g.mutex.Unlock()
+	g.mutex.Lock()
+
 	if !g.innerInited {
 		g.initInner()
 	}
-
-	defer g.inner.mutex.Unlock()
-	g.inner.mutex.Lock()
 
 	handler()
 }

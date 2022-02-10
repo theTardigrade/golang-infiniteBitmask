@@ -8,12 +8,12 @@ import (
 type Value struct {
 	inner       valueInner
 	innerInited bool
+	mutex       sync.RWMutex
 }
 
 type valueInner struct {
 	number    *big.Int
 	generator *Generator
-	mutex     sync.RWMutex
 }
 
 func newValue(number uint8, generator *Generator) (v *Value) {
@@ -41,14 +41,23 @@ func (v *Value) read(handler func()) {
 		return
 	}
 
-	if !v.innerInited {
-		v.initInner(nil, nil)
+	var shouldWrite bool
+
+	func() {
+		defer v.mutex.RUnlock()
+		v.mutex.RLock()
+
+		if !v.innerInited {
+			shouldWrite = true
+			return
+		}
+
+		handler()
+	}()
+
+	if shouldWrite {
+		v.write(handler)
 	}
-
-	defer v.inner.mutex.RUnlock()
-	v.inner.mutex.RLock()
-
-	handler()
 }
 
 func (v *Value) write(handler func()) {
@@ -56,12 +65,12 @@ func (v *Value) write(handler func()) {
 		return
 	}
 
+	defer v.mutex.Unlock()
+	v.mutex.Lock()
+
 	if !v.innerInited {
 		v.initInner(nil, nil)
 	}
-
-	defer v.inner.mutex.Unlock()
-	v.inner.mutex.Lock()
 
 	handler()
 }
