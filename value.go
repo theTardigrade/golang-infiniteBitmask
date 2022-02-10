@@ -129,20 +129,10 @@ func (v *Value) Clear() {
 	})
 }
 
-func (v *Value) IsNotEmpty() (result bool) {
-	v.read(func() {
-		if v.inner.number == nil {
-			return
-		}
-
-		result = v.inner.number.Cmp(bigZero) != 0
-	})
-
-	return
-}
-
 func (v *Value) IsEmpty() (result bool) {
-	result = !v.IsNotEmpty()
+	v.read(func() {
+		result = v.inner.number.Cmp(bigZero) == 0
+	})
 
 	return
 }
