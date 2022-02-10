@@ -108,7 +108,7 @@ func (g *Generator) Values() (values []*Value) {
 
 		var i int
 		for _, v := range g.inner.valuesByName {
-			values[i] = v
+			values[i] = v.Clone()
 			i++
 		}
 	})
@@ -122,7 +122,7 @@ func (g *Generator) Pairs() (pairs []*Pair) {
 
 		var i int
 		for n, v := range g.inner.valuesByName {
-			pairs[i] = newPair(n, v)
+			pairs[i] = newPair(n, v.Clone())
 			i++
 		}
 	})
