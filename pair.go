@@ -39,5 +39,5 @@ func (p *Pair) Name() string {
 func (p *Pair) Value() *Value {
 	p.checkInnerInited()
 
-	return p.inner.value
+	return p.inner.value.Clone()
 }
