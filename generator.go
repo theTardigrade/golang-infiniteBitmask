@@ -135,10 +135,16 @@ func (g *Generator) Clone() (g2 *Generator) {
 
 	g.read(func() {
 		for n, v := range g.inner.valuesByName {
-			g2.inner.valuesByName[n] = v.Clone()
+			v2 := g2.newValue(0)
+			v2.inner.number.Set(v.inner.number)
+
+			g2.inner.valuesByName[n] = v2
 		}
 
-		g2.inner.valueCurrent = g.inner.valueCurrent.Clone()
+		vc2 := g2.newValue(0)
+		vc2.inner.number.Set(g.inner.valueCurrent.inner.number)
+
+		g2.inner.valueCurrent = vc2
 	})
 
 	return
