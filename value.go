@@ -16,14 +16,10 @@ type valueInner struct {
 	generator *Generator
 }
 
-func newValue(number uint8, generator *Generator) (v *Value) {
+func newValue(number *big.Int, generator *Generator) (v *Value) {
 	v = &Value{}
 
-	v.initInner(nil, generator)
-
-	if number != 0 {
-		v.inner.number.SetUint64(uint64(number))
-	}
+	v.initInner(number, generator)
 
 	return
 }

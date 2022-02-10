@@ -1,6 +1,7 @@
 package infiniteBitmask
 
 import (
+	"math/big"
 	"sort"
 	"strings"
 	"sync"
@@ -16,10 +17,6 @@ type generatorInner struct {
 	valueCurrent *Value
 	valuesByName map[string]*Value
 }
-
-const (
-	generatorValueCurrentNumberInitial = 1
-)
 
 func NewGenerator() (g *Generator) {
 	g = &Generator{}
@@ -39,11 +36,11 @@ func NewGeneratorFromString(input string) (g *Generator) {
 
 func (g *Generator) initInner() {
 	g.inner.valuesByName = make(map[string]*Value)
-	g.inner.valueCurrent = g.newValue(generatorValueCurrentNumberInitial)
+	g.inner.valueCurrent = g.newValue(bigOne)
 	g.innerInited = true
 }
 
-func (g *Generator) newValue(number uint8) (v *Value) {
+func (g *Generator) newValue(number *big.Int) (v *Value) {
 	v = newValue(number, g)
 
 	return
@@ -135,14 +132,12 @@ func (g *Generator) Clone() (g2 *Generator) {
 
 	g.read(func() {
 		for n, v := range g.inner.valuesByName {
-			v2 := g2.newValue(0)
-			v2.inner.number.Set(v.inner.number)
+			v2 := g2.newValue(v.inner.number)
 
 			g2.inner.valuesByName[n] = v2
 		}
 
-		vc2 := g2.newValue(0)
-		vc2.inner.number.Set(g.inner.valueCurrent.inner.number)
+		vc2 := g2.newValue(g.inner.valueCurrent.inner.number)
 
 		g2.inner.valueCurrent = vc2
 	})
@@ -200,7 +195,7 @@ func (g *Generator) ValueFromName(name string) (value *Value) {
 
 func (g *Generator) ValueFromNames(names ...string) (value *Value) {
 	g.read(func() {
-		value = g.newValue(0)
+		value = g.newValue(nil)
 	})
 
 	for _, n := range names {

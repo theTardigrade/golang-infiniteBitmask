@@ -15,7 +15,7 @@ type testValueDatum struct {
 
 func (suite *testValueDatum) SetupTest() {
 	suite.Generator = NewGenerator()
-	suite.Value = suite.Generator.newValue(0)
+	suite.Value = suite.Generator.newValue(bigZero)
 }
 
 func (suite *testValueDatum) TestString() {
