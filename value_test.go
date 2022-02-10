@@ -37,10 +37,6 @@ func (suite *testValueDatum) TestIsEmpty() {
 	assert.Equal(suite.T(), true, suite.Value.IsEmpty())
 }
 
-func (suite *testValueDatum) TestIsNotEmpty() {
-	assert.Equal(suite.T(), false, suite.Value.IsNotEmpty())
-}
-
 func (suite *testValueDatum) TestClone() {
 	valueCloned := suite.Value.Clone()
 
