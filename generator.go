@@ -51,7 +51,7 @@ func (g *Generator) newValue(number uint8) (v *Value) {
 
 func (g *Generator) read(handler func()) {
 	if g == nil {
-		return
+		panic(ErrPointerNil)
 	}
 
 	var shouldWrite bool
@@ -75,7 +75,7 @@ func (g *Generator) read(handler func()) {
 
 func (g *Generator) write(handler func()) {
 	if g == nil {
-		return
+		panic(ErrPointerNil)
 	}
 
 	defer g.mutex.Unlock()
@@ -185,7 +185,9 @@ func (g *Generator) ValueFromName(name string) (value *Value) {
 }
 
 func (g *Generator) ValueFromNames(names ...string) (value *Value) {
-	value = g.newValue(0)
+	g.read(func() {
+		value = g.newValue(0)
+	})
 
 	for _, n := range names {
 		v := g.ValueFromName(n)

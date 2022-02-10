@@ -21,6 +21,10 @@ func newPair(name string, value *Value) *Pair {
 }
 
 func (p *Pair) checkInnerInited() {
+	if p == nil {
+		panic(ErrPointerNil)
+	}
+
 	if !p.innerInited {
 		panic(ErrPairUninitialized)
 	}

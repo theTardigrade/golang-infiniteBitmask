@@ -38,7 +38,7 @@ func (v *Value) initInner(number *big.Int, generator *Generator) {
 
 func (v *Value) read(handler func()) {
 	if v == nil {
-		return
+		panic(ErrPointerNil)
 	}
 
 	var shouldWrite bool
@@ -62,7 +62,7 @@ func (v *Value) read(handler func()) {
 
 func (v *Value) write(handler func()) {
 	if v == nil {
-		return
+		panic(ErrPointerNil)
 	}
 
 	defer v.mutex.Unlock()
