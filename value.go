@@ -161,32 +161,22 @@ func (v *Value) Clone() (v2 *Value) {
 	return
 }
 
-func (v *Value) equalRegardlessOfGenerator(v2 *Value) (result bool) {
+func (v *Value) equal(v2 *Value, checkGeneratorMatch bool) (result bool) {
 	v.read(func() {
 		v2.read(func() {
+			if checkGeneratorMatch {
+				v.checkGeneratorMatch(v2)
+			}
+
 			result = v.inner.number.Cmp(v2.inner.number) == 0
 		})
 	})
-
-	if !result && v == nil && v2 == nil {
-		result = true
-	}
 
 	return
 }
 
 func (v *Value) Equal(v2 *Value) (result bool) {
-	v.read(func() {
-		v2.read(func() {
-			v.checkGeneratorMatch(v2)
-
-			result = v.inner.number.Cmp(v2.inner.number) == 0
-		})
-	})
-
-	if !result && v == nil && v2 == nil {
-		result = true
-	}
+	result = v.equal(v2, true)
 
 	return
 }

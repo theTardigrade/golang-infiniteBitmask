@@ -151,7 +151,7 @@ func (g *Generator) Equal(g2 *Generator) (result bool) {
 				return
 			}
 
-			if !g.inner.valueCurrent.equalRegardlessOfGenerator(g2.inner.valueCurrent) {
+			if !g.inner.valueCurrent.equal(g2.inner.valueCurrent, false) {
 				return
 			}
 
@@ -161,7 +161,7 @@ func (g *Generator) Equal(g2 *Generator) (result bool) {
 					return
 				}
 
-				if !gValue.equalRegardlessOfGenerator(g2Value) {
+				if !gValue.equal(g2Value, false) {
 					return
 				}
 			}
