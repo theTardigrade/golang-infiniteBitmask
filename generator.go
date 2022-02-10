@@ -18,7 +18,7 @@ type generatorInner struct {
 }
 
 const (
-	generatorValueNumberInitial = 1
+	generatorValueCurrentNumberInitial = 1
 )
 
 func NewGenerator() (g *Generator) {
@@ -39,7 +39,7 @@ func NewGeneratorFromString(input string) (g *Generator) {
 
 func (g *Generator) initInner() {
 	g.inner.valuesByName = make(map[string]*Value)
-	g.inner.valueCurrent = g.newValue(generatorValueNumberInitial)
+	g.inner.valueCurrent = g.newValue(generatorValueCurrentNumberInitial)
 	g.innerInited = true
 }
 
@@ -243,13 +243,20 @@ func (g *Generator) loadString(input string) (err error) {
 		return
 	}
 
-	inputSplit := make([]string, 0, inputLen/3+1)
+	input = input[1 : inputLen-1]
+
+	inputSplitCap := inputLen / 3
+	if inputSplitCap < 1 {
+		inputSplitCap = 1
+	}
+
+	inputSplit := make([]string, 0, inputSplitCap)
 
 	{
 		var currInputSplitBuilder strings.Builder
 		var prevRune rune
 
-		for _, r := range input[1 : inputLen-1] {
+		for _, r := range input {
 			if r == ',' && prevRune != '\\' {
 				if currInputSplitBuilder.Len() < 2 {
 					err = ErrLoadString
@@ -285,10 +292,12 @@ func (g *Generator) loadString(input string) (err error) {
 			return
 		}
 
+		n = n[1 : nLen-1]
+
 		var nameBuilder strings.Builder
 		var prevRune rune
 
-		for _, r := range n[1 : nLen-1] {
+		for _, r := range n {
 			switch r {
 			case '\\', '"', ',':
 				if prevRune == '\\' {
