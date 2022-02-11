@@ -208,21 +208,23 @@ func (g *Generator) ValueFromNames(names ...string) (value *Value) {
 }
 
 func (g *Generator) ValueFromAllNames() (value *Value) {
+	var valueCurrentCloned *Value
+
 	g.read(func() {
 		value = g.newValue(nil)
 
-		valueCurrent := g.inner.valueCurrent.Clone()
-
-		for {
-			valueCurrent.inner.number.Rsh(valueCurrent.inner.number, 1)
-
-			if valueCurrent.inner.number.Cmp(bigZero) == 0 {
-				break
-			}
-
-			value.inner.number.Or(value.inner.number, valueCurrent.inner.number)
-		}
+		valueCurrentCloned = g.inner.valueCurrent.Clone()
 	})
+
+	for {
+		valueCurrentCloned.inner.number.Rsh(valueCurrentCloned.inner.number, 1)
+
+		if valueCurrentCloned.inner.number.Cmp(bigZero) == 0 {
+			break
+		}
+
+		value.inner.number.Or(value.inner.number, valueCurrentCloned.inner.number)
+	}
 
 	return
 }

@@ -74,8 +74,10 @@ func (suite *testGeneratorDatum) TestValueFromAllNames() {
 	suite.Generator.ValueFromName("one")
 	suite.Generator.ValueFromName("two")
 	suite.Generator.ValueFromName("three")
+	suite.Generator.ValueFromName("four")
+	suite.Generator.ValueFromName("five")
 
-	assert.Equal(suite.T(), uint64(7), suite.Generator.ValueFromAllNames().Number().Uint64())
+	assert.Equal(suite.T(), uint64((1<<5)-1), suite.Generator.ValueFromAllNames().Number().Uint64())
 }
 
 func TestGenerator(t *testing.T) {
