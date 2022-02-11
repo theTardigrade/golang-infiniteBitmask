@@ -58,7 +58,7 @@ func (p *Pair) Equal(p2 *Pair) (result bool) {
 		return
 	}
 
-	if !p.inner.value.equal(p2.inner.value, false) {
+	if !p.inner.value.Equal(p2.inner.value) {
 		return
 	}
 
