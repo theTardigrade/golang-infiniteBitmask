@@ -214,7 +214,7 @@ func (g *Generator) ValueFromAllNames() (value *Value) {
 		valueCurrent := g.inner.valueCurrent.Clone()
 
 		for {
-			valueCurrent.inner.number.Rsh(value.inner.number, 1)
+			valueCurrent.inner.number.Rsh(valueCurrent.inner.number, 1)
 
 			if valueCurrent.inner.number.Cmp(bigZero) == 0 {
 				break

@@ -70,6 +70,14 @@ func (suite *testGeneratorDatum) TestGeneratorEqualWithClone() {
 	assert.Equal(suite.T(), suite.Generator.String(), generatorCloned.String())
 }
 
+func (suite *testGeneratorDatum) TestValueFromAllNames() {
+	suite.Generator.ValueFromName("one")
+	suite.Generator.ValueFromName("two")
+	suite.Generator.ValueFromName("three")
+
+	assert.Equal(suite.T(), uint64(7), suite.Generator.ValueFromAllNames().Number().Uint64())
+}
+
 func TestGenerator(t *testing.T) {
 	suite.Run(t, new(testGeneratorDatum))
 }
