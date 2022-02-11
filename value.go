@@ -109,21 +109,22 @@ func (v *Value) Contains(vs ...*Value) (result bool) {
 	case 0:
 		result = true
 	case 1:
+		intersection := new(big.Int)
 		v2 := vs[0]
 
 		v.read(func() {
 			v2.read(func() {
 				v.checkGeneratorMatch(v2)
 
-				intersection := new(big.Int)
 				intersection.And(v.inner.number, v2.inner.number)
-
-				result = intersection.Cmp(bigZero) == 1
 			})
 		})
+
+		result = intersection.Cmp(bigZero) == 1
 	default:
+		intersection := new(big.Int)
+
 		v.read(func() {
-			intersection := new(big.Int)
 			intersection.Set(v.inner.number)
 
 			for _, v2 := range vs {
@@ -133,9 +134,9 @@ func (v *Value) Contains(vs ...*Value) (result bool) {
 					intersection.And(intersection, v2.inner.number)
 				})
 			}
-
-			result = intersection.Cmp(bigZero) == 1
 		})
+
+		result = intersection.Cmp(bigZero) == 1
 	}
 
 	return

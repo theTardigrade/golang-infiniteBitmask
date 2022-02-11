@@ -132,14 +132,10 @@ func (g *Generator) Clone() (g2 *Generator) {
 
 	g.read(func() {
 		for n, v := range g.inner.valuesByName {
-			v2 := g2.newValue(v.inner.number)
-
-			g2.inner.valuesByName[n] = v2
+			g2.inner.valuesByName[n] = g2.newValue(v.inner.number)
 		}
 
-		vc2 := g2.newValue(g.inner.valueCurrent.inner.number)
-
-		g2.inner.valueCurrent = vc2
+		g2.inner.valueCurrent = g2.newValue(g.inner.valueCurrent.inner.number)
 	})
 
 	return
@@ -198,10 +194,12 @@ func (g *Generator) ValueFromNames(names ...string) (value *Value) {
 		value = g.newValue(nil)
 	})
 
+	valueNumber := value.inner.number
+
 	for _, n := range names {
 		v := g.ValueFromName(n)
 
-		value.inner.number.Or(value.inner.number, v.inner.number)
+		valueNumber.Or(valueNumber, v.inner.number)
 	}
 
 	return
