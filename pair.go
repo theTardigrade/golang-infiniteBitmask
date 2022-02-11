@@ -41,3 +41,20 @@ func (p *Pair) Value() *Value {
 
 	return p.inner.value.Clone()
 }
+
+func (p *Pair) Equal(p2 *Pair) (result bool) {
+	p.checkInnerInited()
+	p2.checkInnerInited()
+
+	if p.inner.name != p2.inner.name {
+		return
+	}
+
+	if !p.inner.value.equal(p2.inner.value, false) {
+		return
+	}
+
+	result = true
+
+	return
+}
