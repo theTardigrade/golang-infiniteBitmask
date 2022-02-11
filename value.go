@@ -138,9 +138,9 @@ func (v *Value) IsEmpty() (result bool) {
 }
 
 func (v *Value) Clone() (v2 *Value) {
-	v.read(func() {
-		v2 = &Value{}
+	v2 = &Value{}
 
+	v.read(func() {
 		v2.initInner(v.inner.number, v.inner.generator)
 	})
 
