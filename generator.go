@@ -127,6 +127,12 @@ func (g *Generator) Pairs() (pairs []*Pair) {
 	return
 }
 
+func (g *Generator) Clear() {
+	g.write(func() {
+		g.initInner()
+	})
+}
+
 func (g *Generator) Clone() (g2 *Generator) {
 	g2 = NewGenerator()
 
