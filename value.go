@@ -105,11 +105,17 @@ func (v *Value) Uncombine(vs ...*Value) {
 }
 
 func (v *Value) Contains(vs ...*Value) (result bool) {
-	switch len(vs) {
-	case 0:
+	vsLen := len(vs)
+
+	if vsLen == 0 {
 		result = true
+		return
+	}
+
+	intersection := new(big.Int)
+
+	switch vsLen {
 	case 1:
-		intersection := new(big.Int)
 		v2 := vs[0]
 
 		v.read(func() {
@@ -119,11 +125,7 @@ func (v *Value) Contains(vs ...*Value) (result bool) {
 				intersection.And(v.inner.number, v2.inner.number)
 			})
 		})
-
-		result = intersection.Cmp(bigZero) == 1
 	default:
-		intersection := new(big.Int)
-
 		v.read(func() {
 			intersection.Set(v.inner.number)
 
@@ -135,9 +137,9 @@ func (v *Value) Contains(vs ...*Value) (result bool) {
 				})
 			}
 		})
-
-		result = intersection.Cmp(bigZero) == 1
 	}
+
+	result = intersection.Cmp(bigZero) == 1
 
 	return
 }
