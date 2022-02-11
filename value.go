@@ -176,8 +176,10 @@ func (v *Value) String() (result string) {
 }
 
 func (v *Value) Number() (number *big.Int) {
+	number = new(big.Int)
+
 	v.read(func() {
-		number = v.inner.number
+		number.Set(v.inner.number)
 	})
 
 	return
